@@ -3,6 +3,13 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { generateMetadata as createMetadata } from '@/utils/metadata';
 
+interface CommitFile {
+  filename: string;
+  additions: number;
+  deletions: number;
+  status: string;
+}
+
 export default async function CommitPage({ 
   params 
 }: { 
@@ -69,7 +76,7 @@ export default async function CommitPage({
               <div className="bg-gray-900 rounded-lg p-4">
                 <h2 className="text-white font-medium mb-4">Changes</h2>
                 <div className="space-y-2">
-                  {commit.files.map((file, index) => (
+                  {commit.files.map((file: CommitFile, index: number) => (
                     <div 
                       key={index}
                       className="flex items-center justify-between py-2 text-sm"
