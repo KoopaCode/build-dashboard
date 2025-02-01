@@ -1,3 +1,4 @@
+@ -1,124 +0,0 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import type { VercelDeploymentWebhook } from '@/types/webhook';
