@@ -125,7 +125,7 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
   return (
     <>
       {/* Search */}
-      <div className="mb-8">
+      <div className="mb-8 px-4 sm:px-0">
         <div className="relative">
           <input
             type="search"
@@ -141,27 +141,27 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
       </div>
       
       {/* Plugin Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 px-4 sm:px-0">
         {filteredPlugins.map((plugin) => (
           <div
             key={plugin.repoName}
             className="bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-700 hover:border-blue-500 transition-all group"
           >
-            <div className="p-6">
-              {/* Header Section with Title and Actions */}
-              <div className="flex justify-between items-start mb-6">
-                <div>
+            <div className="p-4 md:p-6">
+              {/* Header Section */}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
+                <div className="flex-1 min-w-0">
                   <Link 
                     href={`/${plugin.repoName}`}
-                    className="group-hover:text-blue-400 transition-colors"
+                    className="group-hover:text-blue-400 transition-colors block"
                   >
-                    <h2 className="text-2xl font-bold text-white mb-2 hover:text-blue-400 transition-colors">
+                    <h2 className="text-xl md:text-2xl font-bold text-white mb-2 hover:text-blue-400 transition-colors truncate">
                       {plugin.name}
                     </h2>
                   </Link>
-                  <p className="text-gray-400">{plugin.description}</p>
+                  <p className="text-gray-400 text-sm md:text-base line-clamp-2">{plugin.description}</p>
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex space-x-3 sm:flex-shrink-0">
                   <button
                     onClick={() => openIssueTemplate(plugin)}
                     className="text-gray-400 hover:text-red-400 transition-colors"
@@ -184,29 +184,29 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
               </div>
 
               {/* Artifacts Section */}
-              <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
+              <div className="space-y-3 max-h-[calc(100vh-20rem)] overflow-y-auto custom-scrollbar">
                 {plugin.artifacts.length > 0 ? (
                   plugin.artifacts.map((artifact, index) => (
                     <div 
                       key={artifact.name}
-                      className="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-colors"
+                      className="bg-gray-700 rounded-lg p-3 md:p-4 hover:bg-gray-600 transition-colors"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="min-w-0 flex-1 mr-4">
-                          <h3 className="text-white font-medium flex items-center">
-                            <span className={`flex-shrink-0 w-3 h-3 rounded-full mr-2 ${
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-white font-medium flex items-center text-sm md:text-base">
+                            <span className={`flex-shrink-0 w-2.5 h-2.5 rounded-full mr-2 ${
                               artifact.workflowRun.conclusion === 'success' ? 'bg-green-500' : 'bg-yellow-500'
                             }`}></span>
                             <span className="truncate">{artifact.name}</span>
                           </h3>
-                          <div className="text-sm text-gray-400 mt-1 truncate">
+                          <div className="text-xs md:text-sm text-gray-400 mt-1">
                             <p>Built: {new Date(artifact.createdAt).toLocaleString()}</p>
                           </div>
                         </div>
-                        <div className="flex space-x-2 flex-shrink-0">
+                        <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                           <button
                             onClick={() => setSelectedBuild({ plugin, artifactIndex: index })}
-                            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition-colors flex items-center space-x-2 whitespace-nowrap"
+                            className="flex-1 sm:flex-none px-3 py-1.5 bg-gray-600 text-white text-sm rounded hover:bg-gray-500 transition-colors flex items-center justify-center space-x-1"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -215,7 +215,7 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
                           </button>
                           <a
                             href={artifact.downloadUrl}
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center space-x-2 whitespace-nowrap"
+                            className="flex-1 sm:flex-none px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center space-x-1"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

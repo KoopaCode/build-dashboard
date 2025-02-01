@@ -28,7 +28,44 @@ This dashboard is part of our commitment to transparency, allowing users to:
 - 🎨 Modern, responsive interface
 - 🔗 Integration with Modrinth for stable releases
 - 📦 Direct artifact downloads
-- 🐛 One-click issue reporting
+- 🐛 Advanced issue tracking features:
+  - Build-specific issue filtering
+  - Real-time issue updates
+  - Markdown support in issues
+  - Issue status tracking
+- 📝 Documentation features:
+  - Automatic README rendering
+  - Support for HTML and Markdown
+  - Image optimization
+  - Code block highlighting
+- 📱 Mobile-first design:
+  - Responsive layouts
+  - Touch-friendly interfaces
+  - Optimized for all screen sizes
+- 🔄 Build Actions:
+  - One-click downloads
+  - Quick issue reporting
+  - Build information access
+- 🎯 Enhanced UI features:
+  - Custom scrollbars
+  - Loading states
+  - Error boundaries
+  - Smooth transitions
+- 🔒 Type-safe implementation
+- 🌐 SEO optimized
+- ⚡ Performance optimized
+
+## Recent Updates
+
+- Added comprehensive issue tracking system
+- Implemented build-specific documentation display
+- Enhanced mobile responsiveness
+- Added real-time issue updates
+- Improved error handling
+- Added markdown support for documentation
+- Enhanced build action accessibility
+- Improved type safety throughout
+- Added proper metadata handling
 
 ## Open Source Commitment
 

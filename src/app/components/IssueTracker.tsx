@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Image from 'next/image';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface Issue {
   number: number;
@@ -95,6 +97,63 @@ export default function IssueTracker({ repoName, buildVersion, commitId }: Issue
     );
   };
 
+  const markdownComponents = {
+    h1: ({node, ...props}) => <h1 className="text-2xl font-bold mb-4 text-white" {...props} />,
+    h2: ({node, ...props}) => <h2 className="text-xl font-bold mb-3 text-white" {...props} />,
+    h3: ({node, ...props}) => <h3 className="text-lg font-bold mb-2 text-white" {...props} />,
+    p: ({node, ...props}) => <p className="mb-4 text-gray-200" {...props} />,
+    ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4 text-gray-200" {...props} />,
+    ol: ({node, ...props}) => <ol className="list-decimal pl-6 mb-4 text-gray-200" {...props} />,
+    li: ({node, ...props}) => <li className="mb-1" {...props} />,
+    strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
+    em: ({node, ...props}) => <em className="italic text-gray-300" {...props} />,
+    code: ({node, inline, className, children, ...props}: any) => {
+      const match = /language-(\w+)/.exec(className || '');
+      const language = match ? match[1] : '';
+      
+      if (inline) {
+        return (
+          <code 
+            className="bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono text-emerald-300" 
+            {...props}
+          >
+            {children}
+          </code>
+        );
+      }
+
+      return (
+        <div className="relative group">
+          {language && (
+            <div className="absolute right-2 top-2 text-xs text-emerald-400 bg-gray-800/80 px-2 py-1 rounded">
+              {language}
+            </div>
+          )}
+          <SyntaxHighlighter
+            language={language || 'text'}
+            style={oneDark}
+            customStyle={{
+              margin: 0,
+              padding: '1rem',
+              borderRadius: '0.5rem',
+              backgroundColor: '#1a1f29',
+              border: '1px solid #2f3b4b'
+            }}
+            {...props}
+          >
+            {String(children).replace(/\n$/, '')}
+          </SyntaxHighlighter>
+        </div>
+      );
+    },
+    blockquote: ({node, ...props}) => (
+      <blockquote className="border-l-4 border-gray-600 pl-4 italic my-4 text-gray-300" {...props} />
+    ),
+    a: ({node, ...props}) => (
+      <a className="text-blue-400 hover:text-blue-300 underline" target="_blank" rel="noopener noreferrer" {...props} />
+    ),
+  };
+
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-4">
@@ -108,11 +167,13 @@ export default function IssueTracker({ repoName, buildVersion, commitId }: Issue
   return (
     <>
       {/* Download and Report Section */}
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 mb-6 border border-gray-700/50">
         <div className="flex justify-between items-center">
           <div>
             <h3 className="text-white font-medium mb-2">Build Actions</h3>
-            <p className="text-sm text-gray-400">Download this build or report any issues you encounter</p>
+            <p className="text-sm text-gray-300">
+              Download this build or report any issues you encounter
+            </p>
           </div>
           <div className="flex space-x-4">
             <a
@@ -141,10 +202,10 @@ export default function IssueTracker({ repoName, buildVersion, commitId }: Issue
       </div>
 
       {/* Issues Section */}
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 mb-6 border border-gray-700/50">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white font-medium">Build Issues</h3>
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-gray-300">
             {issues.length} {issues.length === 1 ? 'issue' : 'issues'} reported
           </span>
         </div>
@@ -283,24 +344,7 @@ export default function IssueTracker({ repoName, buildVersion, commitId }: Issue
                 <div className="bg-gray-900 rounded-lg p-4 whitespace-pre-wrap border border-gray-700">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
-                    components={{
-                      h1: ({node, ...props}) => <h1 className="text-2xl font-bold mb-4" {...props} />,
-                      h2: ({node, ...props}) => <h2 className="text-xl font-bold mb-3" {...props} />,
-                      h3: ({node, ...props}) => <h3 className="text-lg font-bold mb-2" {...props} />,
-                      p: ({node, ...props}) => <p className="mb-4" {...props} />,
-                      ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4" {...props} />,
-                      ol: ({node, ...props}) => <ol className="list-decimal pl-6 mb-4" {...props} />,
-                      li: ({node, ...props}) => <li className="mb-1" {...props} />,
-                      strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
-                      em: ({node, ...props}) => <em className="italic text-gray-300" {...props} />,
-                      code: ({node, ...props}) => <code className="bg-gray-800 px-1 rounded" {...props} />,
-                      blockquote: ({node, ...props}) => (
-                        <blockquote className="border-l-4 border-gray-700 pl-4 italic my-4" {...props} />
-                      ),
-                      a: ({node, ...props}) => (
-                        <a className="text-blue-400 hover:text-blue-300" target="_blank" rel="noopener noreferrer" {...props} />
-                      ),
-                    }}
+                    components={markdownComponents}
                   >
                     {selectedIssue.body}
                   </ReactMarkdown>
@@ -333,30 +377,12 @@ export default function IssueTracker({ repoName, buildVersion, commitId }: Issue
 
       {/* README Section */}
       {readme && (
-        <div className="bg-gray-900 rounded-lg p-4">
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700/50">
           <h3 className="text-white font-medium mb-4">Plugin Documentation</h3>
-          <div className="prose prose-invert max-w-none bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <div className="prose prose-invert max-w-none bg-gray-800/80 rounded-lg p-4 border border-gray-700/50">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
-              components={{
-                h1: ({node, ...props}) => <h1 className="text-2xl font-bold mb-4 text-white text-center" {...props} />,
-                h2: ({node, ...props}) => <h2 className="text-xl font-bold mb-3 text-white mt-6" {...props} />,
-                h3: ({node, ...props}) => <h3 className="text-lg font-bold mb-2 text-white mt-4" {...props} />,
-                p: ({node, ...props}) => <p className="mb-4 text-gray-300" {...props} />,
-                img: ({node, src, alt, ...props}) => (
-                  <div className="flex justify-center my-4">
-                    <img
-                      src={src}
-                      alt={alt || ''}
-                      className="max-w-full rounded-lg"
-                      {...props}
-                    />
-                  </div>
-                ),
-                a: ({node, ...props}) => (
-                  <a className="text-blue-400 hover:text-blue-300" target="_blank" rel="noopener noreferrer" {...props} />
-                ),
-              }}
+              components={markdownComponents}
             >
               {convertHtmlToMarkdown(readme)}
             </ReactMarkdown>
