@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Image from 'next/image'
+import Link from 'next/link'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -46,14 +47,16 @@ export default function RootLayout({
           <header className="bg-gray-900 p-4">
             <div className="max-w-7xl mx-auto">
               <div className="flex items-center justify-center mb-4">
-                <Image
-                  src="https://lapislabs.dev/images/KoopaLabs.png"
-                  alt="KoopaLabs Logo"
-                  width={300}
-                  height={75}
-                  priority
-                  className="h-auto"
-                />
+                <Link href="/" className="hover:opacity-90 transition-opacity">
+                  <Image
+                    src="https://lapislabs.dev/images/KoopaLabs.png"
+                    alt="KoopaLabs Logo"
+                    width={300}
+                    height={75}
+                    priority
+                    className="h-auto"
+                  />
+                </Link>
               </div>
               <div className="flex justify-center space-x-6">
                 <a
