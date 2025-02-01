@@ -51,6 +51,7 @@ interface MarkdownComponentProps {
   inline?: boolean;
   className?: string;
   children?: React.ReactNode;
+  [key: string]: any;
 }
 
 export default function IssueTracker({ repoName, buildVersion, commitId }: IssueTrackerProps) {
@@ -121,16 +122,16 @@ export default function IssueTracker({ repoName, buildVersion, commitId }: Issue
   };
 
   const markdownComponents = {
-    h1: ({node, ...props}) => <h1 className="text-2xl font-bold mb-4 text-white" {...props} />,
-    h2: ({node, ...props}) => <h2 className="text-xl font-bold mb-3 text-white" {...props} />,
-    h3: ({node, ...props}) => <h3 className="text-lg font-bold mb-2 text-white" {...props} />,
-    p: ({node, ...props}) => <p className="mb-4 text-gray-200" {...props} />,
-    ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4 text-gray-200" {...props} />,
-    ol: ({node, ...props}) => <ol className="list-decimal pl-6 mb-4 text-gray-200" {...props} />,
-    li: ({node, ...props}) => <li className="mb-1" {...props} />,
-    strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
-    em: ({node, ...props}) => <em className="italic text-gray-300" {...props} />,
-    code: ({node, inline, className, children, ...props}: any) => {
+    h1: ({ ...props }: MarkdownComponentProps) => <h1 className="text-2xl font-bold mb-4 text-white" {...props} />,
+    h2: ({ ...props }: MarkdownComponentProps) => <h2 className="text-xl font-bold mb-3 text-white" {...props} />,
+    h3: ({ ...props }: MarkdownComponentProps) => <h3 className="text-lg font-bold mb-2 text-white" {...props} />,
+    p: ({ ...props }: MarkdownComponentProps) => <p className="mb-4 text-gray-200" {...props} />,
+    ul: ({ ...props }: MarkdownComponentProps) => <ul className="list-disc pl-6 mb-4 text-gray-200" {...props} />,
+    ol: ({ ...props }: MarkdownComponentProps) => <ol className="list-decimal pl-6 mb-4 text-gray-200" {...props} />,
+    li: ({ ...props }: MarkdownComponentProps) => <li className="mb-1" {...props} />,
+    strong: ({ ...props }: MarkdownComponentProps) => <strong className="font-bold text-white" {...props} />,
+    em: ({ ...props }: MarkdownComponentProps) => <em className="italic text-gray-300" {...props} />,
+    code: ({ inline, className, children, ...props }: MarkdownComponentProps) => {
       const match = /language-(\w+)/.exec(className || '');
       const language = match ? match[1] : '';
       
@@ -169,10 +170,10 @@ export default function IssueTracker({ repoName, buildVersion, commitId }: Issue
         </div>
       );
     },
-    blockquote: ({node, ...props}) => (
+    blockquote: ({ ...props }: MarkdownComponentProps) => (
       <blockquote className="border-l-4 border-gray-600 pl-4 italic my-4 text-gray-300" {...props} />
     ),
-    a: ({node, ...props}) => (
+    a: ({ ...props }: MarkdownComponentProps) => (
       <a className="text-blue-400 hover:text-blue-300 underline" target="_blank" rel="noopener noreferrer" {...props} />
     ),
   };
