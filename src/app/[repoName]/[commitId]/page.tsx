@@ -2,6 +2,7 @@ import { fetchPluginData, fetchCommitDetails } from '@/utils/github';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { generateMetadata as createMetadata } from '@/utils/metadata';
+import CreateIssueButton from '@/app/components/CreateIssueButton';
 
 interface CommitFile {
   filename: string;
@@ -91,7 +92,7 @@ export default async function CommitPage({
                 </div>
               </div>
 
-              <div className="flex justify-end pt-4 border-t border-gray-700">
+              <div className="flex justify-between items-center mt-6">
                 <a
                   href={artifact.downloadUrl}
                   className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center"
@@ -101,6 +102,13 @@ export default async function CommitPage({
                   </svg>
                   Download Build
                 </a>
+                
+                <CreateIssueButton
+                  repoName={params.repoName}
+                  artifactName={artifact.name}
+                  commitId={params.commitId}
+                  createdAt={artifact.createdAt}
+                />
               </div>
             </div>
           </div>

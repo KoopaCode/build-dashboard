@@ -1,8 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
-export default function CommitError({ params }: { params: { repoName: string } }) {
+export default function CommitError() {
+  const params = useParams();
+  const repoName = params?.repoName as string;
+
   return (
     <main className="min-h-screen bg-gray-900 flex items-start justify-center px-4 pt-32">
       <div className="text-center">
@@ -26,7 +30,7 @@ export default function CommitError({ params }: { params: { repoName: string } }
             All Plugins
           </Link>
           <Link 
-            href={`/${params.repoName}`}
+            href={`/${repoName}`}
             className="inline-flex items-center px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
