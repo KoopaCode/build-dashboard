@@ -1,14 +1,17 @@
 import { fetchPluginData, fetchJavaRepos } from '@/utils/github';
 import { Suspense } from 'react';
 import ClientSearch from './components/ClientSearch';
+import { Plugin } from '@/types/github';
 
 // This is now a server component that fetches data
-async function getPlugins() {
+async function getPlugins(): Promise<Plugin[]> {
   try {
     const repos = await fetchJavaRepos();
-    const plugins = await Promise.all(
+    const pluginsWithNull = await Promise.all(
       repos.map(repo => fetchPluginData(repo))
     );
+    // Filter out null values and cast to Plugin[]
+    const plugins = pluginsWithNull.filter((plugin): plugin is Plugin => plugin !== null);
     return plugins;
   } catch (error) {
     console.error('Error fetching plugins:', error);
