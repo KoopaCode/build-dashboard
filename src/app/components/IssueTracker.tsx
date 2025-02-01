@@ -4,8 +4,24 @@ import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Image from 'next/image';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+
+// Add language support
+import yaml from 'react-syntax-highlighter/dist/cjs/languages/prism/yaml';
+import typescript from 'react-syntax-highlighter/dist/cjs/languages/prism/typescript';
+import javascript from 'react-syntax-highlighter/dist/cjs/languages/prism/javascript';
+import json from 'react-syntax-highlighter/dist/cjs/languages/prism/json';
+import markdown from 'react-syntax-highlighter/dist/cjs/languages/prism/markdown';
+import java from 'react-syntax-highlighter/dist/cjs/languages/prism/java';
+
+// Register languages
+SyntaxHighlighter.registerLanguage('yaml', yaml);
+SyntaxHighlighter.registerLanguage('typescript', typescript);
+SyntaxHighlighter.registerLanguage('javascript', javascript);
+SyntaxHighlighter.registerLanguage('json', json);
+SyntaxHighlighter.registerLanguage('markdown', markdown);
+SyntaxHighlighter.registerLanguage('java', java);
 
 interface Issue {
   number: number;
@@ -28,6 +44,13 @@ interface IssueTrackerProps {
   repoName: string;
   buildVersion: string;
   commitId: string;
+}
+
+interface MarkdownComponentProps {
+  node?: any;
+  inline?: boolean;
+  className?: string;
+  children?: React.ReactNode;
 }
 
 export default function IssueTracker({ repoName, buildVersion, commitId }: IssueTrackerProps) {
