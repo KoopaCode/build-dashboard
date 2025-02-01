@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import remarkHtml from 'remark-html';
 import Image from 'next/image';
 
 interface Issue {
