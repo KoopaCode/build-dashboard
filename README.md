@@ -160,7 +160,7 @@ This project is open source under the MIT License. While you're free to use and 
 Need help? Have questions?
 - Open an issue on GitHub
 - Join our Discord community
-- Check our documentation (soon)
+- Check our documentation (coming soon)
 
 ## Acknowledgments
 
