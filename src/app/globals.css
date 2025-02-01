@@ -18,7 +18,28 @@ body {
   rgb(var(--background-start-rgb));
 }
 
-/* Custom Scrollbar */
+/* Updated Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1b26;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2f3341;
+  border-radius: 4px;
+  border: 2px solid #1a1b26;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3b3f4f;
+}
+
+/* Custom scrollbar for modals and specific containers */
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
 }
@@ -29,19 +50,21 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: #374151;
+  border: 2px solid #1f2937;
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: #4b5563;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
-}
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 } 

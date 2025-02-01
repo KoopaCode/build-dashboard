@@ -193,4 +193,34 @@ export async function fetchPluginData(repoName: string): Promise<Plugin> {
   }
 }
 
-export { fetchJavaRepos }; 
+export { fetchJavaRepos };
+
+export async function fetchCommitDetails(repoName: string, commitSha: string) {
+  const headers = {
+    Authorization: `Bearer ${GITHUB_TOKEN}`,
+    Accept: 'application/vnd.github.v3+json',
+  };
+
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/${GITHUB_USERNAME}/${repoName}/commits/${commitSha}`,
+      { headers }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch commit details: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return {
+      message: data.commit.message,
+      author: data.commit.author,
+      stats: data.stats,
+      files: data.files,
+      html_url: data.html_url,
+    };
+  } catch (error) {
+    console.error('Error fetching commit details:', error);
+    return null;
+  }
+} 
