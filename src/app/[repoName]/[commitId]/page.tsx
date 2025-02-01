@@ -138,6 +138,14 @@ export async function generateMetadata({
   const plugin = await fetchPluginData(params.repoName);
   const commit = await fetchCommitDetails(params.repoName, params.commitId);
   
+  if (!plugin) {
+    return createMetadata({
+      title: `Build Details - Commit ${params.commitId.substring(0, 7)}`,
+      description: commit?.message || `Build details for commit ${params.commitId.substring(0, 7)}`,
+      path: `/${params.repoName}/${params.commitId}`,
+    });
+  }
+
   return createMetadata({
     title: `${plugin.name} - Commit ${params.commitId.substring(0, 7)}`,
     description: commit?.message || `Build details for commit ${params.commitId.substring(0, 7)}`,
