@@ -121,7 +121,7 @@ export default function RootLayout({
                     </li>
                     <li>
                       <a 
-                        href="https://github.com/KoopaCode" 
+                        href="https://github.com/KoopaCode/build-dashboard" 
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-gray-400 hover:text-white text-sm flex items-center"

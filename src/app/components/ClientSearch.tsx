@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Plugin } from '@/types/github';
+import Link from 'next/link';
 
 interface SelectedBuildInfo {
   plugin: Plugin;
@@ -144,14 +145,20 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
         {filteredPlugins.map((plugin) => (
           <div
             key={plugin.repoName}
-            className="bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-700 hover:border-blue-500 transition-all"
+            className="bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-700 hover:border-blue-500 transition-all group"
           >
             <div className="p-6">
+              {/* Header Section with Title and Actions */}
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">
-                    {plugin.name}
-                  </h2>
+                  <Link 
+                    href={`/${plugin.repoName}`}
+                    className="group-hover:text-blue-400 transition-colors"
+                  >
+                    <h2 className="text-2xl font-bold text-white mb-2 hover:text-blue-400 transition-colors">
+                      {plugin.name}
+                    </h2>
+                  </Link>
                   <p className="text-gray-400">{plugin.description}</p>
                 </div>
                 <div className="flex space-x-3">
@@ -164,19 +171,18 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                   </button>
-                  <a
-                    href={`https://github.com/KoopaCode/${plugin.repoName}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-white transition-colors"
+                  <Link
+                    href={`/${plugin.repoName}`}
+                    className="text-gray-400 hover:text-blue-400 transition-colors"
+                    title="View Plugin Details"
                   >
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
-                  </a>
+                  </Link>
                 </div>
               </div>
-              
+
               {/* Artifacts Section */}
               <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
                 {plugin.artifacts.length > 0 ? (
@@ -186,32 +192,35 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
                       className="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-colors"
                     >
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="min-w-0 flex-1 mr-4">
                           <h3 className="text-white font-medium flex items-center">
-                            <span className={`w-3 h-3 rounded-full mr-2 ${
+                            <span className={`flex-shrink-0 w-3 h-3 rounded-full mr-2 ${
                               artifact.workflowRun.conclusion === 'success' ? 'bg-green-500' : 'bg-yellow-500'
                             }`}></span>
-                            {artifact.name}
+                            <span className="truncate">{artifact.name}</span>
                           </h3>
-                          <div className="text-sm text-gray-400 mt-1">
+                          <div className="text-sm text-gray-400 mt-1 truncate">
                             <p>Built: {new Date(artifact.createdAt).toLocaleString()}</p>
                           </div>
                         </div>
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-2 flex-shrink-0">
                           <button
                             onClick={() => setSelectedBuild({ plugin, artifactIndex: index })}
-                            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition-colors"
+                            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition-colors flex items-center space-x-2 whitespace-nowrap"
                           >
-                            Info
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Info</span>
                           </button>
                           <a
                             href={artifact.downloadUrl}
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center"
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center space-x-2 whitespace-nowrap"
                           >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
-                            Download
+                            <span>Download</span>
                           </a>
                         </div>
                       </div>
@@ -241,14 +250,25 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
                   <h2 className="text-2xl font-bold text-white">{selectedBuild.plugin.name}</h2>
                   <p className="text-sm text-gray-400">Build: {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].name}</p>
                 </div>
-                <button
-                  onClick={() => setSelectedBuild(null)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                <div className="flex space-x-4">
+                  <Link
+                    href={`/${selectedBuild.plugin.repoName}/${selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].workflowRun.headSha}`}
+                    className="text-gray-400 hover:text-blue-400 transition-colors"
+                    title="View Full Details"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Link>
+                  <button
+                    onClick={() => setSelectedBuild(null)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
               </div>
               
               <div className="space-y-6">
@@ -305,7 +325,16 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
                   </>
                 )}
 
-                <div className="flex justify-end pt-4 border-t border-gray-700">
+                <div className="flex justify-between items-center pt-4 border-t border-gray-700">
+                  <Link
+                    href={`/${selectedBuild.plugin.repoName}/${selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].workflowRun.headSha}`}
+                    className="text-blue-400 hover:text-blue-300 flex items-center space-x-2"
+                  >
+                    <span>View Full Details</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Link>
                   <a
                     href={selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].downloadUrl}
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center"
