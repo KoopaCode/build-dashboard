@@ -1,7 +1,23 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import type { VercelDeploymentWebhook } from '@/types/webhook';
 
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+
+function verifySignature(body: string, signature: string | null): boolean {
+  if (!WEBHOOK_SECRET || !signature) return false;
+
+  const expectedSignature = crypto
+    .createHmac('sha256', WEBHOOK_SECRET)
+    .update(body)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
 
 function getStatusEmoji(type: string) {
   switch (type) {
@@ -31,7 +47,18 @@ function getStatusColor(type: string) {
 
 export async function POST(request: Request) {
   try {
-    const payload: VercelDeploymentWebhook = await request.json();
+    const signature = request.headers.get('x-vercel-signature');
+    const body = await request.text();
+
+    // Verify the webhook signature
+    if (!verifySignature(body, signature)) {
+      return NextResponse.json(
+        { error: 'Invalid signature' },
+        { status: 401 }
+      );
+    }
+
+    const payload: VercelDeploymentWebhook = JSON.parse(body);
 
     const { type, deployment } = payload;
     const { url, meta } = deployment;
