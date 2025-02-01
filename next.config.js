@@ -8,6 +8,11 @@ const nextConfig = {
         hostname: 'lapislabs.dev',
         pathname: '/images/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn.modrinth.com',
+        pathname: '/**',
+      },
     ],
   },
 }
