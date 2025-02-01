@@ -252,12 +252,12 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
               </div>
               
               <div className="space-y-6">
-                {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo ? (
+                {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo && (
                   <>
                     <div className="bg-gray-900 rounded-lg p-4">
                       <h4 className="text-white font-medium mb-2">Commit Message</h4>
                       <p className="text-gray-400 whitespace-pre-wrap">
-                        {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo.message}
+                        {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo?.message}
                       </p>
                     </div>
 
@@ -265,13 +265,13 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
                       <h4 className="text-white font-medium mb-2">Changes Summary</h4>
                       <div className="flex space-x-6 text-sm">
                         <span className="text-green-500">
-                          +{selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo.stats.additions} additions
+                          +{selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo?.stats.additions || 0} additions
                         </span>
                         <span className="text-red-500">
-                          -{selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo.stats.deletions} deletions
+                          -{selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo?.stats.deletions || 0} deletions
                         </span>
                         <span className="text-blue-500">
-                          {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo.stats.total} total changes
+                          {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo?.stats.total || 0} total changes
                         </span>
                       </div>
                     </div>
@@ -303,8 +303,6 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
                       </div>
                     </div>
                   </>
-                ) : (
-                  <p className="text-gray-400">No commit information available for this build</p>
                 )}
 
                 <div className="flex justify-end pt-4 border-t border-gray-700">
