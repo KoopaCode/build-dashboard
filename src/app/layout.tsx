@@ -8,6 +8,15 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'KoopaLabs Plugin Builds',
   description: 'Download the latest Minecraft plugin builds from KoopaLabs',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+    other: {
+      rel: 'apple-touch-icon-precomposed',
+      url: '/apple-touch-icon.png',
+    },
+  },
   openGraph: {
     title: 'KoopaLabs Plugin Builds',
     description: 'Download the latest Minecraft plugin builds from KoopaLabs',
@@ -121,7 +130,7 @@ export default function RootLayout({
                     </li>
                     <li>
                       <a 
-                        href="https://github.com/KoopaCode/build-dashboard" 
+                        href="https://github.com/KoopaCode" 
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-gray-400 hover:text-white text-sm flex items-center"

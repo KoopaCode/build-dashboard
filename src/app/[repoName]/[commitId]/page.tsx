@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { generateMetadata as createMetadata } from '@/utils/metadata';
 import CreateIssueButton from '@/app/components/CreateIssueButton';
+import IssueTracker from '@/app/components/IssueTracker';
 
 interface CommitFile {
   filename: string;
@@ -90,6 +91,15 @@ export default async function CommitPage({
                     </div>
                   ))}
                 </div>
+              </div>
+
+              <div className="mt-8">
+                <h2 className="text-white font-medium mb-4">Build Information</h2>
+                <IssueTracker 
+                  repoName={params.repoName} 
+                  buildVersion={artifact.name}
+                  commitId={params.commitId}
+                />
               </div>
 
               <div className="flex justify-between items-center mt-6">

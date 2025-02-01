@@ -103,8 +103,15 @@ export default async function RepoPage({ params }: { params: { repoName: string 
 export async function generateMetadata({ params }: { params: { repoName: string } }) {
   const plugin = await fetchPluginData(params.repoName);
   
+  if (!plugin) {
+    return {
+      title: 'Not Found - KoopaLabs Plugin Builds',
+      description: 'The requested plugin could not be found.',
+    };
+  }
+
   return createMetadata({
-    title: `${plugin.name} - KoopaLabs Builds`,
+    title: `${plugin.name} - KoopaLabs Plugin Builds`,
     description: plugin.description || `Latest builds for ${plugin.name}`,
     path: `/${params.repoName}`,
   });

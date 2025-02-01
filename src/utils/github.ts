@@ -119,7 +119,12 @@ async function getArtifactDownloadUrl(url: string): Promise<string> {
   return Buffer.from(`${url}:${GITHUB_TOKEN}`).toString('base64');
 }
 
-export async function fetchPluginData(repoName: string): Promise<Plugin> {
+export async function fetchPluginData(repoName: string): Promise<Plugin | null> {
+  // Skip favicon.ico requests
+  if (repoName === 'favicon.ico') {
+    return null;
+  }
+
   const headers = {
     Authorization: `Bearer ${GITHUB_TOKEN}`,
     Accept: 'application/vnd.github.v3+json',
@@ -133,6 +138,9 @@ export async function fetchPluginData(repoName: string): Promise<Plugin> {
     );
     
     if (!repoResponse.ok) {
+      if (repoResponse.status === 404) {
+        return null;
+      }
       throw new Error(`Failed to fetch repo data: ${repoResponse.statusText}`);
     }
     
@@ -184,12 +192,7 @@ export async function fetchPluginData(repoName: string): Promise<Plugin> {
     };
   } catch (error) {
     console.error(`Error fetching data for ${repoName}:`, error);
-    return {
-      name: repoName,
-      repoName: repoName,
-      description: 'Failed to load repository data',
-      artifacts: []
-    };
+    return null;
   }
 }
 
