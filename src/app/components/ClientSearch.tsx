@@ -17,6 +17,18 @@ interface ModifiedFile {
   blob_url?: string;
 }
 
+// Move fetchUpdatedPlugins function before it's used
+const fetchUpdatedPlugins = async () => {
+  try {
+    const response = await fetch('/api/plugins');
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching updated plugins:', error);
+    return [];
+  }
+};
+
 export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugin[] }) {
   const { data: plugins, lastUpdated } = useAutoRefresh(initialPlugins, fetchUpdatedPlugins);
   const [searchTerm, setSearchTerm] = useState('');
@@ -123,17 +135,6 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
       </div>
     );
   }
-
-  const fetchUpdatedPlugins = async () => {
-    try {
-      const response = await fetch('/api/plugins');
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error('Error fetching updated plugins:', error);
-      return [];
-    }
-  };
 
   return (
     <>
