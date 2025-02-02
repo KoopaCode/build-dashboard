@@ -328,17 +328,17 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
                       <div>
                         <h4 className="text-gray-400 text-sm mb-1">Message</h4>
                         <p className="text-gray-300 whitespace-pre-wrap">
-                          {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo.message}
+                          {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo?.message || 'No commit message available'}
                         </p>
                       </div>
                       <div>
                         <h4 className="text-gray-400 text-sm mb-1">Changes</h4>
                         <div className="flex space-x-6 text-sm">
                           <span className="text-green-400">
-                            +{selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo.stats.additions} additions
+                            +{selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo?.stats?.additions || 0} additions
                           </span>
                           <span className="text-red-400">
-                            -{selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo.stats.deletions} deletions
+                            -{selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo?.stats?.deletions || 0} deletions
                           </span>
                         </div>
                       </div>
