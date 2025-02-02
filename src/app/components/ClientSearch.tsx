@@ -205,7 +205,7 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
                 {plugin.artifacts.length > 0 ? (
                   plugin.artifacts.map((artifact, index) => (
                     <div 
-                      key={artifact.name}
+                      key={`${plugin.repoName}-${artifact.name}-${artifact.createdAt}`}
                       className="bg-gray-700 rounded-lg p-3 md:p-4 hover:bg-gray-600 transition-colors"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -259,89 +259,94 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
 
       {/* Build Info Modal */}
       {selectedBuild && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-gray-800 rounded-xl max-w-3xl w-full max-h-[80vh] overflow-y-auto custom-scrollbar">
             <div className="p-6">
+              {/* Header */}
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-white">{selectedBuild.plugin.name}</h2>
-                  <p className="text-sm text-gray-400">Build: {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].name}</p>
+                  <h2 className="text-2xl font-bold text-white mb-2">{selectedBuild.plugin.name}</h2>
+                  <p className="text-gray-400">
+                    Build: {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].name}
+                  </p>
                 </div>
-                <div className="flex space-x-4">
-                  <Link
-                    href={`/${selectedBuild.plugin.repoName}/${selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].workflowRun.headSha}`}
-                    className="text-gray-400 hover:text-blue-400 transition-colors"
-                    title="View Full Details"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </Link>
-                  <button
-                    onClick={() => setSelectedBuild(null)}
-                    className="text-gray-400 hover:text-white"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
+                <button
+                  onClick={() => setSelectedBuild(null)}
+                  className="text-gray-400 hover:text-white p-1"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
-              
+
+              {/* Build Information */}
               <div className="space-y-6">
+                {/* Build Status */}
+                <div className="bg-gray-900 rounded-lg p-4">
+                  <h3 className="text-white font-medium mb-3">Build Status</h3>
+                  <div className="flex items-center space-x-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${
+                      selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].workflowRun.conclusion === 'success' 
+                        ? 'bg-green-500' 
+                        : 'bg-yellow-500'
+                    }`}></span>
+                    <span className="text-gray-300">
+                      {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].workflowRun.conclusion === 'success' 
+                        ? 'Build Successful' 
+                        : 'Build In Progress'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Build Details */}
+                <div className="bg-gray-900 rounded-lg p-4">
+                  <h3 className="text-white font-medium mb-3">Build Details</h3>
+                  <div className="space-y-2 text-gray-300">
+                    <p>
+                      <span className="text-gray-400">Created: </span>
+                      {new Date(selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].createdAt).toLocaleString()}
+                    </p>
+                    <p>
+                      <span className="text-gray-400">Size: </span>
+                      {Math.round(selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].size / 1024)} KB
+                    </p>
+                    <p>
+                      <span className="text-gray-400">Commit: </span>
+                      <code className="bg-gray-800 px-2 py-0.5 rounded text-sm">
+                        {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].workflowRun.headSha.substring(0, 7)}
+                      </code>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Commit Information */}
                 {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo && (
-                  <>
-                    <div className="bg-gray-900 rounded-lg p-4">
-                      <h4 className="text-white font-medium mb-2">Commit Message</h4>
-                      <p className="text-gray-400 whitespace-pre-wrap">
-                        {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo?.message}
-                      </p>
-                    </div>
-
-                    <div className="bg-gray-900 rounded-lg p-4">
-                      <h4 className="text-white font-medium mb-2">Changes Summary</h4>
-                      <div className="flex space-x-6 text-sm">
-                        <span className="text-green-500">
-                          +{selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo?.stats.additions || 0} additions
-                        </span>
-                        <span className="text-red-500">
-                          -{selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo?.stats.deletions || 0} deletions
-                        </span>
-                        <span className="text-blue-500">
-                          {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo?.stats.total || 0} total changes
-                        </span>
+                  <div className="bg-gray-900 rounded-lg p-4">
+                    <h3 className="text-white font-medium mb-3">Commit Information</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="text-gray-400 text-sm mb-1">Message</h4>
+                        <p className="text-gray-300 whitespace-pre-wrap">
+                          {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo.message}
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-gray-400 text-sm mb-1">Changes</h4>
+                        <div className="flex space-x-6 text-sm">
+                          <span className="text-green-400">
+                            +{selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo.stats.additions} additions
+                          </span>
+                          <span className="text-red-400">
+                            -{selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo.stats.deletions} deletions
+                          </span>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="bg-gray-900 rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-4">
-                        <h4 className="text-white font-medium">Modified Files</h4>
-                        <a
-                          href={`https://github.com/KoopaCode/${selectedBuild.plugin.repoName}/commit/${selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].workflowRun.headSha}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-gray-400 hover:text-blue-400 transition-colors flex items-center space-x-2"
-                        >
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-                          </svg>
-                          <span>View commit</span>
-                        </a>
-                      </div>
-                      <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar">
-                        {selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].commitInfo?.files.map((file, fileIndex) => (
-                          <CommitFileChanges 
-                            key={fileIndex} 
-                            file={file} 
-                            repoName={selectedBuild.plugin.repoName}
-                            commitSha={selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].workflowRun.headSha}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </>
+                  </div>
                 )}
 
+                {/* Actions */}
                 <div className="flex justify-between items-center pt-4 border-t border-gray-700">
                   <Link
                     href={`/${selectedBuild.plugin.repoName}/${selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].workflowRun.headSha}`}
@@ -354,12 +359,12 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
                   </Link>
                   <a
                     href={selectedBuild.plugin.artifacts[selectedBuild.artifactIndex].downloadUrl}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center"
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center space-x-2"
                   >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
-                    Download Build
+                    <span>Download Build</span>
                   </a>
                 </div>
               </div>

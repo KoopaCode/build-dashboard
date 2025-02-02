@@ -63,6 +63,7 @@ export default function IssueTracker({ repoName, buildVersion, commitId }: Issue
 
   const fetchData = async () => {
     try {
+      // Fetch issues
       const issuesResponse = await fetch(
         `https://api.github.com/repos/KoopaCode/${repoName}/issues?state=all&sort=created&direction=desc`
       );
@@ -74,14 +75,31 @@ export default function IssueTracker({ repoName, buildVersion, commitId }: Issue
         setIssues(relevantIssues);
         setLastUpdated(new Date());
       }
+
+      // Fetch README
+      const readmeResponse = await fetch(
+        `https://api.github.com/repos/KoopaCode/${repoName}/readme`,
+        {
+          headers: {
+            'Accept': 'application/vnd.github.raw+json'
+          }
+        }
+      );
+      if (readmeResponse.ok) {
+        const readmeContent = await readmeResponse.text();
+        setReadme(readmeContent);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchData();
-    const intervalId = setInterval(fetchData, 30000); // Refresh every 30 seconds
+    // Set up auto-refresh every 30 seconds
+    const intervalId = setInterval(fetchData, 30000);
 
     return () => clearInterval(intervalId);
   }, [repoName, commitId]);
@@ -141,6 +159,12 @@ export default function IssueTracker({ repoName, buildVersion, commitId }: Issue
               {language}
             </div>
           )}
+          <button
+            onClick={() => navigator.clipboard.writeText(String(children))}
+            className="absolute right-2 bottom-2 text-xs bg-gray-800/80 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-emerald-400"
+          >
+            Copy
+          </button>
           <SyntaxHighlighter
             language={language || 'text'}
             style={oneDark}
@@ -149,7 +173,9 @@ export default function IssueTracker({ repoName, buildVersion, commitId }: Issue
               padding: '1rem',
               borderRadius: '0.5rem',
               backgroundColor: '#1a1f29',
-              border: '1px solid #2f3b4b'
+              border: '1px solid #2f3b4b',
+              fontSize: '0.9rem',
+              lineHeight: '1.5'
             }}
             {...props}
           >
