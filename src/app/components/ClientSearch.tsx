@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Plugin } from '@/types/github';
 import Link from 'next/link';
+import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 
 interface SelectedBuildInfo {
   plugin: Plugin;
@@ -17,15 +18,16 @@ interface ModifiedFile {
 }
 
 export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugin[] }) {
+  const { data: plugins, lastUpdated } = useAutoRefresh(initialPlugins, fetchUpdatedPlugins);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBuild, setSelectedBuild] = useState<SelectedBuildInfo | null>(null);
 
   const filteredPlugins = searchTerm
-    ? initialPlugins.filter(plugin => 
+    ? plugins.filter(plugin => 
         plugin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         plugin.description.toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : initialPlugins;
+    : plugins;
 
   const openIssueTemplate = (plugin: Plugin) => {
     const template = encodeURIComponent(`**Description of the issue:**
@@ -122,6 +124,17 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
     );
   }
 
+  const fetchUpdatedPlugins = async () => {
+    try {
+      const response = await fetch('/api/plugins');
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching updated plugins:', error);
+      return [];
+    }
+  };
+
   return (
     <>
       {/* Search */}
@@ -132,8 +145,11 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
             placeholder="Search plugins..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none pl-10"
+            className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 pl-12 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          <div className="absolute right-4 top-3 text-gray-400 text-sm">
+            Last updated: {lastUpdated.toLocaleTimeString()}
+          </div>
           <svg className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>

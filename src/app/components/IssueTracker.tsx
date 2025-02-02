@@ -59,43 +59,31 @@ export default function IssueTracker({ repoName, buildVersion, commitId }: Issue
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [readme, setReadme] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+
+  const fetchData = async () => {
+    try {
+      const issuesResponse = await fetch(
+        `https://api.github.com/repos/KoopaCode/${repoName}/issues?state=all&sort=created&direction=desc`
+      );
+      if (issuesResponse.ok) {
+        const data = await issuesResponse.json();
+        const relevantIssues = data.filter((issue: Issue) => 
+          issue.body?.includes(commitId)
+        );
+        setIssues(relevantIssues);
+        setLastUpdated(new Date());
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        // Fetch issues
-        const issuesResponse = await fetch(
-          `https://api.github.com/repos/KoopaCode/${repoName}/issues?state=all&sort=created&direction=desc`
-        );
-        if (issuesResponse.ok) {
-          const data = await issuesResponse.json();
-          const relevantIssues = data.filter((issue: Issue) => 
-            issue.body?.includes(commitId)
-          );
-          setIssues(relevantIssues);
-        }
-
-        // Fetch README
-        const readmeResponse = await fetch(
-          `https://api.github.com/repos/KoopaCode/${repoName}/readme`,
-          {
-            headers: {
-              'Accept': 'application/vnd.github.raw+json'
-            }
-          }
-        );
-        if (readmeResponse.ok) {
-          const readmeContent = await readmeResponse.text();
-          setReadme(readmeContent);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
     fetchData();
+    const intervalId = setInterval(fetchData, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(intervalId);
   }, [repoName, commitId]);
 
   // Function to handle image URLs
@@ -229,8 +217,8 @@ export default function IssueTracker({ repoName, buildVersion, commitId }: Issue
       <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 mb-6 border border-gray-700/50">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white font-medium">Build Issues</h3>
-          <span className="text-sm text-gray-300">
-            {issues.length} {issues.length === 1 ? 'issue' : 'issues'} reported
+          <span className="text-sm text-gray-400">
+            Last updated: {lastUpdated.toLocaleTimeString()}
           </span>
         </div>
         
