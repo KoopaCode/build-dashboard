@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Plugin } from '@/types/github';
 import Link from 'next/link';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
+import TimeDisplay from './TimeDisplay';
 
 interface SelectedBuildInfo {
   plugin: Plugin;
@@ -30,7 +31,7 @@ const fetchUpdatedPlugins = async () => {
 };
 
 export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugin[] }) {
-  const { data: plugins, lastUpdated } = useAutoRefresh(initialPlugins, fetchUpdatedPlugins);
+  const { data: plugins, isLoading, error, lastUpdated, refresh } = useAutoRefresh(initialPlugins);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBuild, setSelectedBuild] = useState<SelectedBuildInfo | null>(null);
 
@@ -136,9 +137,13 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
     );
   }
 
+  // Add refresh button
+  const handleRefresh = () => {
+    refresh();
+  };
+
   return (
     <>
-      {/* Search */}
       <div className="mb-8 px-4 sm:px-0">
         <div className="relative">
           <input
@@ -148,13 +153,24 @@ export default function ClientSearch({ initialPlugins }: { initialPlugins: Plugi
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 pl-12 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <div className="absolute right-4 top-3 text-gray-400 text-sm">
-            Last updated: {lastUpdated.toLocaleTimeString()}
+          <div className="absolute right-4 top-3 flex items-center space-x-4">
+            <button
+              onClick={handleRefresh}
+              className="text-gray-400 hover:text-white transition-colors"
+              title="Refresh"
+            >
+              <svg className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+            <TimeDisplay timestamp={lastUpdated} />
           </div>
-          <svg className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
         </div>
+        {error && (
+          <div className="mt-2 text-red-400 text-sm">
+            Error: {error}
+          </div>
+        )}
       </div>
       
       {/* Plugin Grid */}

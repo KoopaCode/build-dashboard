@@ -21,21 +21,15 @@ async function fetchJavaRepos(): Promise<string[]> {
 
     const repos = await response.json();
     
-    // Filter for Java repositories by checking for pom.xml
+    // Filter for Java repositories by checking for presence of pom.xml or build.gradle
     const javaRepos = await Promise.all(
       repos.map(async (repo: any) => {
-        try {
-          const pomResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_USERNAME}/${repo.name}/contents/pom.xml`,
-            { headers }
-          );
-          if (pomResponse.ok) {
-            return repo.name;
-          }
-        } catch (error) {
-          // Ignore errors for repos without pom.xml
-        }
-        return null;
+        const [pomExists, gradleExists] = await Promise.all([
+          checkFileExists(repo.name, 'pom.xml'),
+          checkFileExists(repo.name, 'build.gradle'),
+        ]);
+
+        return (pomExists || gradleExists) ? repo.name : null;
       })
     );
 
@@ -43,6 +37,23 @@ async function fetchJavaRepos(): Promise<string[]> {
   } catch (error) {
     console.error('Error fetching Java repos:', error);
     return [];
+  }
+}
+
+async function checkFileExists(repoName: string, filename: string): Promise<boolean> {
+  const headers = {
+    Authorization: `Bearer ${GITHUB_TOKEN}`,
+    Accept: 'application/vnd.github.v3+json',
+  };
+
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/${GITHUB_USERNAME}/${repoName}/contents/${filename}`,
+      { headers }
+    );
+    return response.status === 200;
+  } catch {
+    return false;
   }
 }
 
@@ -119,86 +130,127 @@ async function getArtifactDownloadUrl(url: string): Promise<string> {
   return Buffer.from(`${url}:${GITHUB_TOKEN}`).toString('base64');
 }
 
-export async function fetchPluginData(repoName: string): Promise<Plugin | null> {
-  // Skip favicon.ico requests
-  if (repoName === 'favicon.ico') {
-    return null;
-  }
-
+async function fetchPluginData(repoName: string): Promise<Plugin | null> {
   const headers = {
     Authorization: `Bearer ${GITHUB_TOKEN}`,
     Accept: 'application/vnd.github.v3+json',
   };
 
   try {
-    // Fetch repository info
+    // Fetch repository details
     const repoResponse = await fetch(
       `https://api.github.com/repos/${GITHUB_USERNAME}/${repoName}`,
       { headers }
     );
-    
+
     if (!repoResponse.ok) {
       if (repoResponse.status === 404) {
-        return null;
+        return null; // Silently handle 404 for favicon.ico and other invalid repos
       }
-      throw new Error(`Failed to fetch repo data: ${repoResponse.statusText}`);
+      throw new Error(`Failed to fetch repo info: ${repoResponse.statusText}`);
     }
-    
+
     const repoData = await repoResponse.json();
 
-    // Fetch artifacts
-    const artifactsResponse = await fetch(
-      `https://api.github.com/repos/${GITHUB_USERNAME}/${repoName}/actions/artifacts?per_page=5`,
-      { headers }
-    );
-    
+    // Fetch both artifacts and releases
+    const [artifactsResponse, releasesResponse] = await Promise.all([
+      fetch(
+        `https://api.github.com/repos/${GITHUB_USERNAME}/${repoName}/actions/artifacts?per_page=100`,
+        { headers }
+      ),
+      fetch(
+        `https://api.github.com/repos/${GITHUB_USERNAME}/${repoName}/releases?per_page=100`,
+        { headers }
+      )
+    ]);
+
     if (!artifactsResponse.ok) {
       throw new Error(`Failed to fetch artifacts: ${artifactsResponse.statusText}`);
     }
-    
-    const artifactsData = await artifactsResponse.json();
 
-    const artifactsWithCommitInfo = await Promise.all(
-      (artifactsData.artifacts || []).map(async (artifact: ArtifactResponse) => {
-        const commitInfo = artifact.workflow_run?.head_sha 
-          ? await fetchCommitInfo(repoName, artifact.workflow_run.head_sha)
-          : null;
+    if (!releasesResponse.ok) {
+      throw new Error(`Failed to fetch releases: ${releasesResponse.statusText}`);
+    }
 
-        // Get the actual download URL
-        const downloadUrl = `/api/download?url=${encodeURIComponent(artifact.archive_download_url)}&name=${encodeURIComponent(artifact.name)}`;
+    const [artifactsData, releasesData] = await Promise.all([
+      artifactsResponse.json(),
+      releasesResponse.json()
+    ]);
 
+    // Process artifacts and fetch commit info for each
+    const artifacts = await Promise.all([
+      // Process workflow artifacts
+      ...artifactsData.artifacts.map(async (artifact: Artifact) => {
+        const commitInfo = await fetchCommitInfo(repoName, artifact.workflow_run.head_sha);
+        
         return {
           name: artifact.name,
-          downloadUrl: downloadUrl || '#', // Fallback if download URL fails
+          downloadUrl: await getArtifactDownloadUrl(artifact.archive_download_url),
           createdAt: artifact.created_at,
-          size: Math.round(artifact.size_in_bytes / 1024),
-          expiresAt: artifact.expires_at,
+          size: artifact.size_in_bytes,
+          expiresAt: new Date(new Date(artifact.created_at).getTime() + 90 * 24 * 60 * 60 * 1000).toISOString(),
           workflowRun: {
-            headSha: artifact.workflow_run?.head_sha?.substring(0, 7) || 'unknown',
-            headBranch: artifact.workflow_run?.head_branch || 'unknown',
-            conclusion: 'success',
-            createdAt: artifact.created_at
+            headSha: artifact.workflow_run.head_sha,
+            headBranch: 'main',
+            conclusion: artifact.workflow_run.conclusion || 'success',
+            createdAt: artifact.workflow_run.created_at || artifact.created_at,
           },
-          commitInfo
+          commitInfo,
+          type: 'workflow'
+        };
+      }),
+      // Process releases
+      ...releasesData.map(async (release: any) => {
+        const commitInfo = await fetchCommitInfo(repoName, release.target_commitish);
+        
+        return {
+          name: release.name || release.tag_name,
+          downloadUrl: release.assets[0]?.browser_download_url || '',
+          createdAt: release.created_at,
+          size: release.assets[0]?.size || 0,
+          expiresAt: null, // Releases don't expire
+          workflowRun: {
+            headSha: release.target_commitish,
+            headBranch: 'main',
+            conclusion: 'success',
+            createdAt: release.created_at,
+          },
+          commitInfo,
+          type: 'release',
+          releaseInfo: {
+            tagName: release.tag_name,
+            body: release.body,
+            isDraft: release.draft,
+            isPrerelease: release.prerelease
+          }
         };
       })
-    );
+    ]);
+
+    // Filter out any failed artifacts and sort by creation date
+    const validArtifacts = artifacts
+      .filter(artifact => 
+        artifact && 
+        (artifact.type === 'release' || !artifact.workflowRun.conclusion || artifact.workflowRun.conclusion === 'success')
+      )
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return {
       name: repoData.name,
-      repoName: repoName,
+      repoName: repoData.name,
       description: repoData.description || 'No description available',
-      artifacts: artifactsWithCommitInfo
+      artifacts: validArtifacts,
     };
   } catch (error) {
-    console.error(`Error fetching data for ${repoName}:`, error);
+    if (repoName === 'favicon.ico') {
+      return null; // Silently handle favicon.ico requests
+    }
+    console.error(`Error fetching plugin data for ${repoName}:`, error);
     return null;
   }
 }
 
-export { fetchJavaRepos };
-
-export async function fetchCommitDetails(repoName: string, commitSha: string) {
+async function fetchCommitDetails(repoName: string, commitSha: string) {
   const headers = {
     Authorization: `Bearer ${GITHUB_TOKEN}`,
     Accept: 'application/vnd.github.v3+json',
@@ -226,4 +278,10 @@ export async function fetchCommitDetails(repoName: string, commitSha: string) {
     console.error('Error fetching commit details:', error);
     return null;
   }
-} 
+}
+
+export {
+  fetchJavaRepos,
+  fetchPluginData,
+  fetchCommitDetails
+}; 
